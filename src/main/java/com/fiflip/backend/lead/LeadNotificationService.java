@@ -3,24 +3,28 @@ package com.fiflip.backend.lead;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
+
+import java.util.Map;
 
 @Service
 public class LeadNotificationService {
 
     private static final Logger log = LoggerFactory.getLogger(LeadNotificationService.class);
 
-    private final JavaMailSender mailSender;
+    private final RestClient restClient;
     private final String fromAddress;
     private final String notifyAddress;
 
     public LeadNotificationService(
-            JavaMailSender mailSender,
+            @Value("${fiflip.resend.api-key}") String resendApiKey,
             @Value("${fiflip.mail.from}") String fromAddress,
             @Value("${fiflip.mail.notify-to}") String notifyAddress) {
-        this.mailSender = mailSender;
+        this.restClient = RestClient.builder()
+                .baseUrl("https://api.resend.com")
+                .defaultHeader("Authorization", "Bearer " + resendApiKey)
+                .build();
         this.fromAddress = fromAddress;
         this.notifyAddress = notifyAddress;
     }
@@ -58,12 +62,15 @@ public class LeadNotificationService {
 
     private void send(String subject, String body) {
         try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(fromAddress);
-            message.setTo(notifyAddress);
-            message.setSubject(subject);
-            message.setText(body);
-            mailSender.send(message);
+            restClient.post()
+                    .uri("/emails")
+                    .body(Map.of(
+                            "from", fromAddress,
+                            "to", new String[] { notifyAddress },
+                            "subject", subject,
+                            "text", body))
+                    .retrieve()
+                    .toBodilessEntity();
         } catch (Exception e) {
             log.error("Failed to send lead notification email", e);
         }

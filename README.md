@@ -19,36 +19,35 @@ Formulario (React) → POST /api/leads/* → Kafka → consumer → email
 | Variable | Descripción | Ejemplo |
 |---|---|---|
 | `PORT` | Puerto del servidor (Railway lo setea solo) | `8080` |
-| `KAFKA_BOOTSTRAP_SERVERS` | Endpoint del broker de Confluent Cloud | `pkc-xxxxx.us-east-1.aws.confluent.cloud:9092` |
+| `KAFKA_BOOTSTRAP_SERVERS` | Endpoint del broker (Redpanda Cloud u otro) | `xxxxx.any.us-east-1.mpx.prd.cloud.redpanda.com:9092` |
 | `KAFKA_SECURITY_PROTOCOL` | Protocolo de seguridad | `SASL_SSL` |
-| `KAFKA_SASL_MECHANISM` | Mecanismo SASL | `PLAIN` |
-| `KAFKA_SASL_JAAS_CONFIG` | Config JAAS con la API key/secret de Confluent | `org.apache.kafka.common.security.plain.PlainLoginModule required username="API_KEY" password="API_SECRET";` |
-| `MAIL_HOST` | Host SMTP (Resend) | `smtp.resend.com` |
-| `MAIL_PORT` | Puerto SMTP | `465` |
-| `MAIL_USERNAME` | Usuario SMTP de Resend | `resend` |
-| `MAIL_PASSWORD` | API key de Resend (se usa como password SMTP) | `re_xxxxx` |
+| `KAFKA_SASL_MECHANISM` | Mecanismo SASL | `SCRAM-SHA-256` |
+| `KAFKA_SASL_JAAS_CONFIG` | Config JAAS con user/pass del cluster | `org.apache.kafka.common.security.scram.ScramLoginModule required username="..." password="...";` |
+| `RESEND_API_KEY` | API key de Resend (se usa vía HTTP API, no SMTP — la mayoría de los hosts cloud bloquean el puerto SMTP saliente) | `re_xxxxx` |
 | `MAIL_FROM` | Remitente de los emails | `onboarding@resend.dev` (hasta verificar dominio propio) |
 | `LEAD_NOTIFY_EMAIL` | A dónde llegan las notificaciones de leads | `crespi.ian@gmail.com` |
 | `FRONTEND_ORIGIN` | Origen permitido por CORS | `https://fiflip-landing.vercel.app` |
 
 ## Cómo conseguir las credenciales
 
-**Confluent Cloud** (https://confluent.cloud):
-1. Creá una cuenta (te dan ~USD 400 de crédito gratis por 30/60 días).
-2. "Add environment" → nombre `fiflip` → "Create cluster" → tipo **Basic**, elegí la región/proveedor más cercano.
-3. Dentro del cluster, andá a **Topics** → "Create topic" → creá `leads.renovation` y `leads.investor` (particiones: 1 está bien para este volumen).
-4. Andá a **API Keys** → "Create key" → alcance "Cluster" → esto te da un `Key` y un `Secret`. **Copiá el secret ya, no se puede volver a ver.**
-5. Armá `KAFKA_SASL_JAAS_CONFIG` así:
+**Redpanda Cloud Serverless** (https://redpanda.com) — no pide tarjeta para el trial:
+1. Creá una cuenta → se crea un cluster `welcome` automáticamente.
+2. Andá a **Topics** → creá `leads.renovation` y `leads.investor`.
+3. Andá a **Security** → creá un usuario (SASL) con contraseña generada → mecanismo **SCRAM-SHA-256**.
+4. Armá `KAFKA_SASL_JAAS_CONFIG` así:
    ```
-   org.apache.kafka.common.security.plain.PlainLoginModule required username="TU_API_KEY" password="TU_API_SECRET";
+   org.apache.kafka.common.security.scram.ScramLoginModule required username="TU_USUARIO" password="TU_PASSWORD";
    ```
-6. El `KAFKA_BOOTSTRAP_SERVERS` está en **Cluster Settings → Endpoints** (Bootstrap server).
-7. `KAFKA_SECURITY_PROTOCOL=SASL_SSL` y `KAFKA_SASL_MECHANISM=PLAIN`.
+5. El `KAFKA_BOOTSTRAP_SERVERS` está en el Overview del cluster, pestaña "Kafka API" de "How to connect".
+6. `KAFKA_SECURITY_PROTOCOL=SASL_SSL` y `KAFKA_SASL_MECHANISM=SCRAM-SHA-256`.
+
+(Confluent Cloud es una alternativa válida — misma idea, pero pide tarjeta desde el arranque aunque no cobre durante el trial. Usa `PlainLoginModule` y mecanismo `PLAIN` en vez de SCRAM.)
 
 **Resend** (https://resend.com):
 1. Creá una cuenta, andá a "API Keys" → "Create API Key".
-2. Esa key es `MAIL_PASSWORD`. `MAIL_USERNAME` es literalmente `resend`.
-3. Mientras no verifiques un dominio propio, `MAIL_FROM` tiene que ser `onboarding@resend.dev`.
+2. Esa key es `RESEND_API_KEY`.
+3. Mientras no verifiques un dominio propio, `MAIL_FROM` tiene que ser `onboarding@resend.dev`, y solo se puede mandar a la casilla con la que te registraste en Resend.
+4. **Importante**: mandamos el email por la API HTTP de Resend (`api.resend.com`), no por SMTP — Railway y la mayoría de los hosts cloud bloquean el puerto SMTP saliente (465/587) para evitar spam, así que SMTP se cuelga ahí.
 
 ## Deploy en Railway
 
@@ -62,6 +61,6 @@ Formulario (React) → POST /api/leads/* → Kafka → consumer → email
 
 ```bash
 export KAFKA_BOOTSTRAP_SERVERS=localhost:9092
-export MAIL_PASSWORD=tu-api-key-de-resend
+export RESEND_API_KEY=tu-api-key-de-resend
 mvn spring-boot:run
 ```

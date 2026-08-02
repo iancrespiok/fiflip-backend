@@ -10,19 +10,10 @@ spring:
       security.protocol: ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
       sasl.mechanism: ${KAFKA_SASL_MECHANISM:}
       sasl.jaas.config: ${KAFKA_SASL_JAAS_CONFIG:}
-  mail:
-    host: ${MAIL_HOST:smtp.resend.com}
-    port: ${MAIL_PORT:465}
-    username: ${MAIL_USERNAME:resend}
-    password: ${MAIL_PASSWORD:}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          ssl:
-            enable: true
 
 fiflip:
+  resend:
+    api-key: ${RESEND_API_KEY:}
   mail:
     from: ${MAIL_FROM:onboarding@resend.dev}
     notify-to: ${LEAD_NOTIFY_EMAIL:crespi.ian@gmail.com}
