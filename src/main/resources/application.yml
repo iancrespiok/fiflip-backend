@@ -17,6 +17,9 @@ fiflip:
   mail:
     from: ${MAIL_FROM:onboarding@resend.dev}
     notify-to: ${LEAD_NOTIFY_EMAIL:crespi.ian@gmail.com}
+  meta:
+    pixel-id: ${META_PIXEL_ID:}
+    capi-token: ${META_CAPI_ACCESS_TOKEN:}
   cors:
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:5173}
 

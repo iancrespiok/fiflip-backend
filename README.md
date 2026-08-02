@@ -2,17 +2,21 @@
 
 Recibe los leads de la landing (`fiflip-landing`) por HTTP, los publica en tópicos
 de Kafka (`leads.renovation`, `leads.investor`) y un consumer interno manda un
-email de notificación por cada lead recibido.
+email de notificación y un evento a la Meta Conversions API por cada lead recibido.
 
 ```
-Formulario (React) → POST /api/leads/* → Kafka → consumer → email
+Formulario (React) → POST /api/leads/* → Kafka → consumer → email + Meta CAPI
 ```
 
 ## Endpoints
 
-- `POST /api/leads/renovation` — `{ nombre, contacto, tipo, ciudad, medidas, descripcion }`
-- `POST /api/leads/investor` — `{ nombre, contacto, monto, mensaje }`
+- `POST /api/leads/renovation` — `{ nombre, contacto, tipo, ciudad, medidas, descripcion, eventId }`
+- `POST /api/leads/investor` — `{ nombre, contacto, monto, mensaje, eventId }`
 - `GET /actuator/health` — health check
+
+`eventId` es opcional pero recomendado: si el frontend manda el mismo UUID que usó
+al disparar `fbq('track', 'Lead', ..., {eventID})`, Meta deduplica el evento del
+Pixel (navegador) con el de la Conversions API (servidor) en vez de contarlos dos veces.
 
 ## Variables de entorno
 
@@ -26,6 +30,8 @@ Formulario (React) → POST /api/leads/* → Kafka → consumer → email
 | `RESEND_API_KEY` | API key de Resend (se usa vía HTTP API, no SMTP — la mayoría de los hosts cloud bloquean el puerto SMTP saliente) | `re_xxxxx` |
 | `MAIL_FROM` | Remitente de los emails | `onboarding@resend.dev` (hasta verificar dominio propio) |
 | `LEAD_NOTIFY_EMAIL` | A dónde llegan las notificaciones de leads | `crespi.ian@gmail.com` |
+| `META_PIXEL_ID` | ID del pixel/dataset de Meta | `1353577153419443` |
+| `META_CAPI_ACCESS_TOKEN` | Token de acceso de la Conversions API (Events Manager → conjunto de datos → Configuración → API de conversiones → Generar token de acceso) | `EAAg...` |
 | `FRONTEND_ORIGIN` | Origen permitido por CORS | `https://fiflip-landing.vercel.app` |
 
 ## Cómo conseguir las credenciales

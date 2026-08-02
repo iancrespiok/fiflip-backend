@@ -8,6 +8,12 @@ public record RenovationLead(
         String tipo,
         String ciudad,
         String medidas,
-        String descripcion
+        String descripcion,
+        String eventId,
+        String ipAddress,
+        String userAgent
 ) {
+    public RenovationLead withRequestContext(String ipAddress, String userAgent) {
+        return new RenovationLead(nombre, contacto, tipo, ciudad, medidas, descripcion, eventId, ipAddress, userAgent);
+    }
 }

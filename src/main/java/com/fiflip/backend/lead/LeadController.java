@@ -1,5 +1,6 @@
 package com.fiflip.backend.lead;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -21,14 +22,24 @@ public class LeadController {
     }
 
     @PostMapping("/renovation")
-    public ResponseEntity<Map<String, String>> renovation(@Valid @RequestBody RenovationLead lead) {
-        kafkaTemplate.send(LeadTopics.RENOVATION, lead.contacto(), lead);
+    public ResponseEntity<Map<String, String>> renovation(@Valid @RequestBody RenovationLead lead, HttpServletRequest request) {
+        RenovationLead enriched = lead.withRequestContext(clientIp(request), request.getHeader("User-Agent"));
+        kafkaTemplate.send(LeadTopics.RENOVATION, enriched.contacto(), enriched);
         return ResponseEntity.accepted().body(Map.of("status", "received"));
     }
 
     @PostMapping("/investor")
-    public ResponseEntity<Map<String, String>> investor(@Valid @RequestBody InvestorLead lead) {
-        kafkaTemplate.send(LeadTopics.INVESTOR, lead.contacto(), lead);
+    public ResponseEntity<Map<String, String>> investor(@Valid @RequestBody InvestorLead lead, HttpServletRequest request) {
+        InvestorLead enriched = lead.withRequestContext(clientIp(request), request.getHeader("User-Agent"));
+        kafkaTemplate.send(LeadTopics.INVESTOR, enriched.contacto(), enriched);
         return ResponseEntity.accepted().body(Map.of("status", "received"));
+    }
+
+    private static String clientIp(HttpServletRequest request) {
+        String forwarded = request.getHeader("X-Forwarded-For");
+        if (forwarded != null && !forwarded.isBlank()) {
+            return forwarded.split(",")[0].trim();
+        }
+        return request.getRemoteAddr();
     }
 }
