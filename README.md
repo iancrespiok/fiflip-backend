@@ -19,10 +19,10 @@ Formulario (React) → POST /api/leads/* → Kafka → consumer → email
 | Variable | Descripción | Ejemplo |
 |---|---|---|
 | `PORT` | Puerto del servidor (Railway lo setea solo) | `8080` |
-| `KAFKA_BOOTSTRAP_SERVERS` | Endpoint del broker de Upstash Kafka | `usw1-xxx.upstash.io:9092` |
+| `KAFKA_BOOTSTRAP_SERVERS` | Endpoint del broker de Confluent Cloud | `pkc-xxxxx.us-east-1.aws.confluent.cloud:9092` |
 | `KAFKA_SECURITY_PROTOCOL` | Protocolo de seguridad | `SASL_SSL` |
-| `KAFKA_SASL_MECHANISM` | Mecanismo SASL | `SCRAM-SHA-256` |
-| `KAFKA_SASL_JAAS_CONFIG` | Config JAAS con user/pass de Upstash | `org.apache.kafka.common.security.scram.ScramLoginModule required username="..." password="...";` |
+| `KAFKA_SASL_MECHANISM` | Mecanismo SASL | `PLAIN` |
+| `KAFKA_SASL_JAAS_CONFIG` | Config JAAS con la API key/secret de Confluent | `org.apache.kafka.common.security.plain.PlainLoginModule required username="API_KEY" password="API_SECRET";` |
 | `MAIL_HOST` | Host SMTP (Resend) | `smtp.resend.com` |
 | `MAIL_PORT` | Puerto SMTP | `465` |
 | `MAIL_USERNAME` | Usuario SMTP de Resend | `resend` |
@@ -33,15 +33,17 @@ Formulario (React) → POST /api/leads/* → Kafka → consumer → email
 
 ## Cómo conseguir las credenciales
 
-**Upstash Kafka** (https://console.upstash.com):
-1. Creá una cuenta y un cluster de Kafka nuevo.
-2. En el cluster, pestaña "Details", vas a ver el `Endpoint` (eso es `KAFKA_BOOTSTRAP_SERVERS`).
-3. En la misma pantalla están el `Username` y `Password` — armá `KAFKA_SASL_JAAS_CONFIG` así:
+**Confluent Cloud** (https://confluent.cloud):
+1. Creá una cuenta (te dan ~USD 400 de crédito gratis por 30/60 días).
+2. "Add environment" → nombre `fiflip` → "Create cluster" → tipo **Basic**, elegí la región/proveedor más cercano.
+3. Dentro del cluster, andá a **Topics** → "Create topic" → creá `leads.renovation` y `leads.investor` (particiones: 1 está bien para este volumen).
+4. Andá a **API Keys** → "Create key" → alcance "Cluster" → esto te da un `Key` y un `Secret`. **Copiá el secret ya, no se puede volver a ver.**
+5. Armá `KAFKA_SASL_JAAS_CONFIG` así:
    ```
-   org.apache.kafka.common.security.scram.ScramLoginModule required username="TU_USERNAME" password="TU_PASSWORD";
+   org.apache.kafka.common.security.plain.PlainLoginModule required username="TU_API_KEY" password="TU_API_SECRET";
    ```
-4. `KAFKA_SECURITY_PROTOCOL=SASL_SSL` y `KAFKA_SASL_MECHANISM=SCRAM-SHA-256`.
-5. Creá los tópicos `leads.renovation` y `leads.investor` desde la consola (o dejá que se autocreen en el primer mensaje).
+6. El `KAFKA_BOOTSTRAP_SERVERS` está en **Cluster Settings → Endpoints** (Bootstrap server).
+7. `KAFKA_SECURITY_PROTOCOL=SASL_SSL` y `KAFKA_SASL_MECHANISM=PLAIN`.
 
 **Resend** (https://resend.com):
 1. Creá una cuenta, andá a "API Keys" → "Create API Key".
