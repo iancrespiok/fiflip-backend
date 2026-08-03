@@ -42,7 +42,7 @@ public class LeadConsumer {
         return switch (tipo) {
             case "Vender más caro" -> "LeadVenderMasCaro";
             case "Lista para mudarte" -> "LeadListoParaMudarte";
-            case "Cocina o baño" -> "LeadCocinaBano";
+            case "Refaccionar mi espacio" -> "LeadRefaccion";
             default -> "LeadRenovacionOtro";
         };
     }

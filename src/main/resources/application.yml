@@ -4,6 +4,14 @@ server:
 spring:
   application:
     name: fiflip-backend
+  datasource:
+    url: jdbc:postgresql://${PGHOST:localhost}:${PGPORT:5432}/${PGDATABASE:fiflip}
+    username: ${PGUSER:postgres}
+    password: ${PGPASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     properties:
@@ -22,6 +30,15 @@ fiflip:
     capi-token: ${META_CAPI_ACCESS_TOKEN:}
   cors:
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:5173}
+  admin:
+    password: ${ADMIN_PASSWORD:}
+    token-secret: ${ADMIN_TOKEN_SECRET:change-me-in-production}
+  r2:
+    account-id: ${R2_ACCOUNT_ID:}
+    access-key: ${R2_ACCESS_KEY_ID:}
+    secret-key: ${R2_SECRET_ACCESS_KEY:}
+    bucket: ${R2_BUCKET:fiflip-projects}
+    public-url-base: ${R2_PUBLIC_URL:}
 
 management:
   endpoints:
