@@ -10,13 +10,21 @@ Formulario (React) → POST /api/leads/* → Kafka → consumer → email + Meta
 
 ## Endpoints
 
-- `POST /api/leads/renovation` — `{ nombre, contacto, tipo, ciudad, medidas, descripcion, eventId }`
-- `POST /api/leads/investor` — `{ nombre, contacto, monto, mensaje, eventId }`
+- `POST /api/leads/renovation` — `{ nombre, contacto, tipo, ciudad, medidas, descripcion, eventId, customEventId }`
+- `POST /api/leads/investor` — `{ nombre, contacto, monto, mensaje, eventId, customEventId }`
 - `GET /actuator/health` — health check
 
-`eventId` es opcional pero recomendado: si el frontend manda el mismo UUID que usó
-al disparar `fbq('track', 'Lead', ..., {eventID})`, Meta deduplica el evento del
-Pixel (navegador) con el de la Conversions API (servidor) en vez de contarlos dos veces.
+`eventId`/`customEventId` son opcionales pero recomendados: si el frontend manda los
+mismos UUID que usó al disparar `fbq('track'/'trackCustom', ..., {eventID})`, Meta
+deduplica el evento del Pixel (navegador) con el de la Conversions API (servidor) en
+vez de contarlos dos veces.
+
+Por cada lead se mandan **dos** eventos a Meta:
+1. `Lead` (estándar, con `eventId`) — el que Meta usa para optimizar campañas.
+2. Uno personalizado (con `customEventId`) para poder armar públicos separados por
+   intención en Ads Manager:
+   - Renovación → `LeadVenderMasCaro`, `LeadListoParaMudarte`, `LeadCocinaBano` (según `tipo`)
+   - Inversión → `LeadInversion`
 
 ## Variables de entorno
 

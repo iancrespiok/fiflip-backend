@@ -10,10 +10,11 @@ public record RenovationLead(
         String medidas,
         String descripcion,
         String eventId,
+        String customEventId,
         String ipAddress,
         String userAgent
 ) {
     public RenovationLead withRequestContext(String ipAddress, String userAgent) {
-        return new RenovationLead(nombre, contacto, tipo, ciudad, medidas, descripcion, eventId, ipAddress, userAgent);
+        return new RenovationLead(nombre, contacto, tipo, ciudad, medidas, descripcion, eventId, customEventId, ipAddress, userAgent);
     }
 }

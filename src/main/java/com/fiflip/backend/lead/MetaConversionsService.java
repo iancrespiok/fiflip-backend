@@ -31,7 +31,7 @@ public class MetaConversionsService {
         this.restClient = RestClient.builder().baseUrl("https://graph.facebook.com").build();
     }
 
-    public void sendLeadEvent(String contacto, String eventId, String ipAddress, String userAgent) {
+    public void sendEvent(String eventName, String contacto, String eventId, String ipAddress, String userAgent) {
         if (pixelId == null || pixelId.isBlank() || accessToken == null || accessToken.isBlank()) {
             log.debug("Meta Conversions API not configured, skipping event");
             return;
@@ -52,7 +52,7 @@ public class MetaConversionsService {
             }
 
             Map<String, Object> event = new HashMap<>();
-            event.put("event_name", "Lead");
+            event.put("event_name", eventName);
             event.put("event_time", Instant.now().getEpochSecond());
             event.put("action_source", "website");
             event.put("user_data", userData);

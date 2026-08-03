@@ -22,13 +22,28 @@ public class LeadConsumer {
     public void onRenovationLead(RenovationLead lead) {
         log.info("Renovation lead received from {}", lead.contacto());
         notificationService.notifyRenovationLead(lead);
-        metaConversionsService.sendLeadEvent(lead.contacto(), lead.eventId(), lead.ipAddress(), lead.userAgent());
+        metaConversionsService.sendEvent("Lead", lead.contacto(), lead.eventId(), lead.ipAddress(), lead.userAgent());
+        metaConversionsService.sendEvent(
+                renovationCustomEventName(lead.tipo()), lead.contacto(), lead.customEventId(), lead.ipAddress(), lead.userAgent());
     }
 
     @KafkaListener(topics = LeadTopics.INVESTOR, groupId = "fiflip-backend")
     public void onInvestorLead(InvestorLead lead) {
         log.info("Investor lead received from {}", lead.contacto());
         notificationService.notifyInvestorLead(lead);
-        metaConversionsService.sendLeadEvent(lead.contacto(), lead.eventId(), lead.ipAddress(), lead.userAgent());
+        metaConversionsService.sendEvent("Lead", lead.contacto(), lead.eventId(), lead.ipAddress(), lead.userAgent());
+        metaConversionsService.sendEvent("LeadInversion", lead.contacto(), lead.customEventId(), lead.ipAddress(), lead.userAgent());
+    }
+
+    private static String renovationCustomEventName(String tipo) {
+        if (tipo == null) {
+            return "LeadRenovacionOtro";
+        }
+        return switch (tipo) {
+            case "Vender más caro" -> "LeadVenderMasCaro";
+            case "Lista para mudarte" -> "LeadListoParaMudarte";
+            case "Cocina o baño" -> "LeadCocinaBano";
+            default -> "LeadRenovacionOtro";
+        };
     }
 }
