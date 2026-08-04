@@ -20,7 +20,7 @@ public class ProjectController {
 
     @GetMapping
     public List<Project> list() {
-        return repository.findAllByOrderByCreatedAtDesc();
+        return repository.findAllByOrderByProjectDateDesc();
     }
 
     @GetMapping("/{id}")

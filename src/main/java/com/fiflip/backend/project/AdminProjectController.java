@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.YearMonth;
 import java.util.List;
 
 @RestController
@@ -33,7 +34,8 @@ public class AdminProjectController {
             @NotEmpty List<String> afterImageUrls,
             String status,
             Double tea,
-            Boolean teaProjected) {
+            Boolean teaProjected,
+            @NotBlank String projectDate) {
     }
 
     @PostMapping
@@ -47,7 +49,8 @@ public class AdminProjectController {
                 request.afterImageUrls(),
                 request.status() != null ? ProjectStatus.valueOf(request.status()) : null,
                 request.tea(),
-                request.teaProjected());
+                request.teaProjected(),
+                YearMonth.parse(request.projectDate()).atDay(1));
         return ResponseEntity.ok(repository.save(project));
     }
 
@@ -64,6 +67,7 @@ public class AdminProjectController {
                     project.setStatus(request.status() != null ? ProjectStatus.valueOf(request.status()) : null);
                     project.setTea(request.tea());
                     project.setTeaProjected(request.teaProjected());
+                    project.setProjectDate(YearMonth.parse(request.projectDate()).atDay(1));
                     return ResponseEntity.ok(repository.save(project));
                 })
                 .orElse(ResponseEntity.notFound().build());

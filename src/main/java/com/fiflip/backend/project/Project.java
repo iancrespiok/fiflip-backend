@@ -15,6 +15,7 @@ import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,6 +59,8 @@ public class Project {
 
     private Boolean teaProjected;
 
+    private LocalDate projectDate;
+
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -65,7 +68,8 @@ public class Project {
     }
 
     public Project(String title, String description, ProjectCategory category, String coverImageUrl,
-            List<String> beforeImageUrls, List<String> afterImageUrls, ProjectStatus status, Double tea, Boolean teaProjected) {
+            List<String> beforeImageUrls, List<String> afterImageUrls, ProjectStatus status, Double tea,
+            Boolean teaProjected, LocalDate projectDate) {
         this.title = title;
         this.description = description;
         this.category = category;
@@ -75,6 +79,7 @@ public class Project {
         this.status = status;
         this.tea = tea;
         this.teaProjected = teaProjected;
+        this.projectDate = projectDate;
     }
 
     public Long getId() {
@@ -155,5 +160,13 @@ public class Project {
 
     public void setTeaProjected(Boolean teaProjected) {
         this.teaProjected = teaProjected;
+    }
+
+    public LocalDate getProjectDate() {
+        return projectDate;
+    }
+
+    public void setProjectDate(LocalDate projectDate) {
+        this.projectDate = projectDate;
     }
 }
