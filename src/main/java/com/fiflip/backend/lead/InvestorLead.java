@@ -4,7 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 
 public record InvestorLead(
         @NotBlank String nombre,
-        @NotBlank String contacto,
+        @NotBlank String email,
+        @NotBlank String telefono,
         String monto,
         String mensaje,
         String eventId,
@@ -13,6 +14,6 @@ public record InvestorLead(
         String userAgent
 ) {
     public InvestorLead withRequestContext(String ipAddress, String userAgent) {
-        return new InvestorLead(nombre, contacto, monto, mensaje, eventId, customEventId, ipAddress, userAgent);
+        return new InvestorLead(nombre, email, telefono, monto, mensaje, eventId, customEventId, ipAddress, userAgent);
     }
 }

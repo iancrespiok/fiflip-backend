@@ -34,13 +34,14 @@ public class LeadNotificationService {
                 Nueva solicitud de renovación
 
                 Nombre: %s
-                Contacto: %s
+                Email: %s
+                Teléfono: %s
                 Tipo de proyecto: %s
                 Ciudad: %s
                 Medidas: %s
                 Descripción: %s
                 """.formatted(
-                lead.nombre(), lead.contacto(), nullToDash(lead.tipo()),
+                lead.nombre(), lead.email(), lead.telefono(), nullToDash(lead.tipo()),
                 nullToDash(lead.ciudad()), nullToDash(lead.medidas()), nullToDash(lead.descripcion()));
 
         send("Fiflip — nueva solicitud de renovación", body);
@@ -51,11 +52,12 @@ public class LeadNotificationService {
                 Nuevo interesado en invertir
 
                 Nombre: %s
-                Contacto: %s
+                Email: %s
+                Teléfono: %s
                 Monto aproximado: %s
                 Mensaje: %s
                 """.formatted(
-                lead.nombre(), lead.contacto(), nullToDash(lead.monto()), nullToDash(lead.mensaje()));
+                lead.nombre(), lead.email(), lead.telefono(), nullToDash(lead.monto()), nullToDash(lead.mensaje()));
 
         send("Fiflip — nuevo interesado en invertir", body);
     }

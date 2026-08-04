@@ -24,14 +24,14 @@ public class LeadController {
     @PostMapping("/renovation")
     public ResponseEntity<Map<String, String>> renovation(@Valid @RequestBody RenovationLead lead, HttpServletRequest request) {
         RenovationLead enriched = lead.withRequestContext(clientIp(request), request.getHeader("User-Agent"));
-        kafkaTemplate.send(LeadTopics.RENOVATION, enriched.contacto(), enriched);
+        kafkaTemplate.send(LeadTopics.RENOVATION, enriched.email(), enriched);
         return ResponseEntity.accepted().body(Map.of("status", "received"));
     }
 
     @PostMapping("/investor")
     public ResponseEntity<Map<String, String>> investor(@Valid @RequestBody InvestorLead lead, HttpServletRequest request) {
         InvestorLead enriched = lead.withRequestContext(clientIp(request), request.getHeader("User-Agent"));
-        kafkaTemplate.send(LeadTopics.INVESTOR, enriched.contacto(), enriched);
+        kafkaTemplate.send(LeadTopics.INVESTOR, enriched.email(), enriched);
         return ResponseEntity.accepted().body(Map.of("status", "received"));
     }
 

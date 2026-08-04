@@ -20,19 +20,22 @@ public class LeadConsumer {
 
     @KafkaListener(topics = LeadTopics.RENOVATION, groupId = "fiflip-backend")
     public void onRenovationLead(RenovationLead lead) {
-        log.info("Renovation lead received from {}", lead.contacto());
+        log.info("Renovation lead received from {}", lead.email());
         notificationService.notifyRenovationLead(lead);
-        metaConversionsService.sendEvent("Lead", lead.contacto(), lead.eventId(), lead.ipAddress(), lead.userAgent());
         metaConversionsService.sendEvent(
-                renovationCustomEventName(lead.tipo()), lead.contacto(), lead.customEventId(), lead.ipAddress(), lead.userAgent());
+                "Lead", lead.email(), lead.telefono(), lead.eventId(), lead.ipAddress(), lead.userAgent());
+        metaConversionsService.sendEvent(
+                renovationCustomEventName(lead.tipo()), lead.email(), lead.telefono(), lead.customEventId(), lead.ipAddress(), lead.userAgent());
     }
 
     @KafkaListener(topics = LeadTopics.INVESTOR, groupId = "fiflip-backend")
     public void onInvestorLead(InvestorLead lead) {
-        log.info("Investor lead received from {}", lead.contacto());
+        log.info("Investor lead received from {}", lead.email());
         notificationService.notifyInvestorLead(lead);
-        metaConversionsService.sendEvent("Lead", lead.contacto(), lead.eventId(), lead.ipAddress(), lead.userAgent());
-        metaConversionsService.sendEvent("LeadInversion", lead.contacto(), lead.customEventId(), lead.ipAddress(), lead.userAgent());
+        metaConversionsService.sendEvent(
+                "Lead", lead.email(), lead.telefono(), lead.eventId(), lead.ipAddress(), lead.userAgent());
+        metaConversionsService.sendEvent(
+                "LeadInversion", lead.email(), lead.telefono(), lead.customEventId(), lead.ipAddress(), lead.userAgent());
     }
 
     private static String renovationCustomEventName(String tipo) {

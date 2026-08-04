@@ -31,18 +31,18 @@ public class MetaConversionsService {
         this.restClient = RestClient.builder().baseUrl("https://graph.facebook.com").build();
     }
 
-    public void sendEvent(String eventName, String contacto, String eventId, String ipAddress, String userAgent) {
+    public void sendEvent(String eventName, String email, String phone, String eventId, String ipAddress, String userAgent) {
         if (pixelId == null || pixelId.isBlank() || accessToken == null || accessToken.isBlank()) {
             log.debug("Meta Conversions API not configured, skipping event");
             return;
         }
         try {
             Map<String, Object> userData = new HashMap<>();
-            String normalized = contacto.trim().toLowerCase();
-            if (normalized.contains("@")) {
-                userData.put("em", List.of(sha256(normalized)));
-            } else {
-                userData.put("ph", List.of(sha256(normalized.replaceAll("[^0-9]", ""))));
+            if (email != null && !email.isBlank()) {
+                userData.put("em", List.of(sha256(email.trim().toLowerCase())));
+            }
+            if (phone != null && !phone.isBlank()) {
+                userData.put("ph", List.of(sha256(phone.replaceAll("[^0-9]", ""))));
             }
             if (ipAddress != null && !ipAddress.isBlank()) {
                 userData.put("client_ip_address", ipAddress);
