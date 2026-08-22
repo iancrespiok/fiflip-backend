@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -40,11 +41,22 @@ public class LeadNotificationService {
                 Ciudad: %s
                 Medidas: %s
                 Descripción: %s
+
+                Fotos:
+                %s
                 """.formatted(
                 lead.nombre(), lead.email(), lead.telefono(), nullToDash(lead.tipo()),
-                nullToDash(lead.ciudad()), nullToDash(lead.medidas()), nullToDash(lead.descripcion()));
+                nullToDash(lead.ciudad()), nullToDash(lead.medidas()), nullToDash(lead.descripcion()),
+                formatPhotoLinks(lead.fotoUrls()));
 
         send("Fiflip — nueva solicitud de renovación", body);
+    }
+
+    private static String formatPhotoLinks(List<String> urls) {
+        if (urls == null || urls.isEmpty()) {
+            return "(sin fotos adjuntas)";
+        }
+        return String.join("\n", urls);
     }
 
     public void notifyInvestorLead(InvestorLead lead) {

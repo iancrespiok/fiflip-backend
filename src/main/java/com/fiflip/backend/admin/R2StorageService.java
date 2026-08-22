@@ -38,12 +38,16 @@ public class R2StorageService {
     }
 
     public String upload(MultipartFile file) throws java.io.IOException {
+        return upload(file, "projects");
+    }
+
+    public String upload(MultipartFile file, String prefix) throws java.io.IOException {
         String extension = "";
         String originalName = file.getOriginalFilename();
         if (originalName != null && originalName.contains(".")) {
             extension = originalName.substring(originalName.lastIndexOf('.'));
         }
-        String key = "projects/" + UUID.randomUUID() + extension;
+        String key = prefix + "/" + UUID.randomUUID() + extension;
 
         client().putObject(
                 PutObjectRequest.builder()
