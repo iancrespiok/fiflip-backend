@@ -1,6 +1,7 @@
 package com.fiflip.backend.budget;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,9 +18,11 @@ import java.util.List;
 public class PricingSeeder implements CommandLineRunner {
 
     private final PricingItemRepository repository;
+    private final JdbcTemplate jdbcTemplate;
 
-    public PricingSeeder(PricingItemRepository repository) {
+    public PricingSeeder(PricingItemRepository repository, JdbcTemplate jdbcTemplate) {
         this.repository = repository;
+        this.jdbcTemplate = jdbcTemplate;
     }
 
     private static final List<String> DEPRECATED_KEYS = List.of(
@@ -81,6 +84,12 @@ public class PricingSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        // Hibernate's ddl-auto=update never widens a CHECK constraint it generated for an
+        // @Enumerated(STRING) column, so adding a new PricingUnit value would make every
+        // insert using it fail against the constraint from whenever the table was first
+        // created. Drop it — Bean Validation / the enum type itself already guard the values.
+        jdbcTemplate.execute("ALTER TABLE pricing_items DROP CONSTRAINT IF EXISTS pricing_items_unit_check");
+
         DEPRECATED_KEYS.forEach(key -> repository.findById(key).ifPresent(repository::delete));
 
         for (PricingItem item : CATALOG) {
