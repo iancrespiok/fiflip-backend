@@ -29,7 +29,11 @@ public class PricingSeeder implements CommandLineRunner {
             "wall_covering_m2", "floor_m2", "ceiling_gypsum_m2", "paint_m2",
             "sanitary_fixed", "shower_glass_fixed", "vanity_mirror_fixed", "outlets_fixed",
             "door_window_fixed", "ac_fixed", "kitchen_expand_fixed", "kitchen_furniture_fixed",
-            "faucet_fixed", "countertop_fixed", "closet_doors_fixed", "lighting_fixed");
+            "faucet_fixed", "countertop_fixed", "closet_doors_fixed", "lighting_fixed",
+            // Rendimientos de pintura/enduido/fijador: fijados en el código (no editables), ver
+            // BudgetCalculatorPage.jsx — no tiene sentido que un admin los cambie sin conocer
+            // las fichas técnicas de los productos.
+            "paint_bucket_coverage_m2", "putty_bucket_coverage_m2", "primer_coverage_m2");
 
     private static final List<PricingItem> CATALOG = List.of(
             // GENERAL — piso, revestimientos y techo: material y mano de obra por separado
@@ -49,11 +53,8 @@ public class PricingSeeder implements CommandLineRunner {
             // PINTURA — mano de obra por m² + materiales calculados por rendimiento
             new PricingItem("paint_labor_m2", "Pintura — mano de obra — por m²", "PINTURA", PricingUnit.M2, 6000),
             new PricingItem("paint_bucket_price", "Balde de pintura látex 20L (precio)", "PINTURA", PricingUnit.FIXED, 85000),
-            new PricingItem("paint_bucket_coverage_m2", "Rendimiento balde de pintura 20L", "PINTURA", PricingUnit.COVERAGE_M2, 40),
             new PricingItem("putty_bucket_price", "Balde de enduido 20L (precio)", "PINTURA", PricingUnit.FIXED, 55000),
-            new PricingItem("putty_bucket_coverage_m2", "Rendimiento balde de enduido 20L", "PINTURA", PricingUnit.COVERAGE_M2, 25),
             new PricingItem("primer_price", "Fijador 4L (precio)", "PINTURA", PricingUnit.FIXED, 30000),
-            new PricingItem("primer_coverage_m2", "Rendimiento fijador 4L", "PINTURA", PricingUnit.COVERAGE_M2, 40),
 
             // BAÑO
             new PricingItem("sanitary_material_fixed", "Sanitarios — inodoro/bidet (material)", "BAÑO", PricingUnit.FIXED, 140000),
