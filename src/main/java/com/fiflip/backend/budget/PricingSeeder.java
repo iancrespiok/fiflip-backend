@@ -63,6 +63,8 @@ public class PricingSeeder implements CommandLineRunner {
             new PricingItem("shower_glass_labor_fixed", "Ducha con mampara de vidrio (mano de obra)", "BAÑO", PricingUnit.FIXED, 160000),
             new PricingItem("vanity_mirror_material_fixed", "Vanitory con espejo (material)", "BAÑO", PricingUnit.FIXED, 170000),
             new PricingItem("vanity_mirror_labor_fixed", "Vanitory con espejo (mano de obra)", "BAÑO", PricingUnit.FIXED, 90000),
+            new PricingItem("sliding_door_material_fixed", "Puerta corrediza (material)", "BAÑO", PricingUnit.FIXED, 150000),
+            new PricingItem("sliding_door_labor_fixed", "Puerta corrediza (mano de obra)", "BAÑO", PricingUnit.FIXED, 80000),
 
             // COCINA
             new PricingItem("kitchen_expand_material_fixed", "Ampliación del espacio (material)", "COCINA", PricingUnit.FIXED, 400000),
