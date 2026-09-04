@@ -1,5 +1,8 @@
-package com.fiflip.backend.lead;
+package com.fiflip.backend.lead.infrastructure;
 
+import com.fiflip.backend.lead.application.LeadNotifier;
+import com.fiflip.backend.lead.domain.InvestorLead;
+import com.fiflip.backend.lead.domain.RenovationLead;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,15 +13,15 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class LeadNotificationService {
+public class ResendLeadNotifier implements LeadNotifier {
 
-    private static final Logger log = LoggerFactory.getLogger(LeadNotificationService.class);
+    private static final Logger log = LoggerFactory.getLogger(ResendLeadNotifier.class);
 
     private final RestClient restClient;
     private final String fromAddress;
     private final String notifyAddress;
 
-    public LeadNotificationService(
+    public ResendLeadNotifier(
             @Value("${fiflip.resend.api-key}") String resendApiKey,
             @Value("${fiflip.mail.from}") String fromAddress,
             @Value("${fiflip.mail.notify-to}") String notifyAddress) {
@@ -30,6 +33,7 @@ public class LeadNotificationService {
         this.notifyAddress = notifyAddress;
     }
 
+    @Override
     public void notifyRenovationLead(RenovationLead lead) {
         String body = """
                 Nueva solicitud de renovación
@@ -59,6 +63,7 @@ public class LeadNotificationService {
         return String.join("\n", urls);
     }
 
+    @Override
     public void notifyInvestorLead(InvestorLead lead) {
         String body = """
                 Nuevo interesado en invertir

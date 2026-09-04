@@ -1,5 +1,7 @@
-package com.fiflip.backend.lead;
+package com.fiflip.backend.lead.infrastructure;
 
+import com.fiflip.backend.lead.application.ConversionEventPublisher;
+import com.fiflip.backend.lead.domain.ConversionEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,15 +17,15 @@ import java.util.List;
 import java.util.Map;
 
 @Service
-public class MetaConversionsService {
+public class MetaConversionEventPublisher implements ConversionEventPublisher {
 
-    private static final Logger log = LoggerFactory.getLogger(MetaConversionsService.class);
+    private static final Logger log = LoggerFactory.getLogger(MetaConversionEventPublisher.class);
 
     private final RestClient restClient;
     private final String pixelId;
     private final String accessToken;
 
-    public MetaConversionsService(
+    public MetaConversionEventPublisher(
             @Value("${fiflip.meta.pixel-id}") String pixelId,
             @Value("${fiflip.meta.capi-token}") String accessToken) {
         this.pixelId = pixelId;
@@ -31,13 +33,18 @@ public class MetaConversionsService {
         this.restClient = RestClient.builder().baseUrl("https://graph.facebook.com").build();
     }
 
-    public void sendEvent(String eventName, String email, String phone, String eventId, String ipAddress, String userAgent) {
+    @Override
+    public void publish(ConversionEvent conversionEvent) {
         if (pixelId == null || pixelId.isBlank() || accessToken == null || accessToken.isBlank()) {
             log.debug("Meta Conversions API not configured, skipping event");
             return;
         }
         try {
             Map<String, Object> userData = new HashMap<>();
+            String email = conversionEvent.email();
+            String phone = conversionEvent.phone();
+            String ipAddress = conversionEvent.ipAddress();
+            String userAgent = conversionEvent.userAgent();
             if (email != null && !email.isBlank()) {
                 userData.put("em", List.of(sha256(email.trim().toLowerCase())));
             }
@@ -52,10 +59,11 @@ public class MetaConversionsService {
             }
 
             Map<String, Object> event = new HashMap<>();
-            event.put("event_name", eventName);
+            event.put("event_name", conversionEvent.eventName());
             event.put("event_time", Instant.now().getEpochSecond());
             event.put("action_source", "website");
             event.put("user_data", userData);
+            String eventId = conversionEvent.eventId();
             if (eventId != null && !eventId.isBlank()) {
                 event.put("event_id", eventId);
             }
