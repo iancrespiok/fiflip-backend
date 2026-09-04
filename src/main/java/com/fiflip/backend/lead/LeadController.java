@@ -3,7 +3,6 @@ package com.fiflip.backend.lead;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,24 +14,24 @@ import java.util.Map;
 @RequestMapping("/api/leads")
 public class LeadController {
 
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final LeadProcessingService leadProcessingService;
 
-    public LeadController(KafkaTemplate<String, Object> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
+    public LeadController(LeadProcessingService leadProcessingService) {
+        this.leadProcessingService = leadProcessingService;
     }
 
     @PostMapping("/renovation")
     public ResponseEntity<Map<String, String>> renovation(@Valid @RequestBody RenovationLead lead, HttpServletRequest request) {
         RenovationLead enriched = lead.withRequestContext(clientIp(request), request.getHeader("User-Agent"));
-        kafkaTemplate.send(LeadTopics.RENOVATION, enriched.email(), enriched);
-        return ResponseEntity.accepted().body(Map.of("status", "received"));
+        leadProcessingService.processRenovationLead(enriched);
+        return ResponseEntity.ok(Map.of("status", "received"));
     }
 
     @PostMapping("/investor")
     public ResponseEntity<Map<String, String>> investor(@Valid @RequestBody InvestorLead lead, HttpServletRequest request) {
         InvestorLead enriched = lead.withRequestContext(clientIp(request), request.getHeader("User-Agent"));
-        kafkaTemplate.send(LeadTopics.INVESTOR, enriched.email(), enriched);
-        return ResponseEntity.accepted().body(Map.of("status", "received"));
+        leadProcessingService.processInvestorLead(enriched);
+        return ResponseEntity.ok(Map.of("status", "received"));
     }
 
     private static String clientIp(HttpServletRequest request) {
