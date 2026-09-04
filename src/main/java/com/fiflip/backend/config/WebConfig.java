@@ -1,6 +1,6 @@
 package com.fiflip.backend.config;
 
-import com.fiflip.backend.admin.AdminAuthInterceptor;
+import com.fiflip.backend.admin.infrastructure.AdminAuthInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
