@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,6 +23,11 @@ public class AdminBudgetPricingController {
 
     public AdminBudgetPricingController(PricingUseCases pricingUseCases) {
         this.pricingUseCases = pricingUseCases;
+    }
+
+    @GetMapping("/pricing")
+    public List<PricingItem> pricing() {
+        return pricingUseCases.listPricing();
     }
 
     public record PriceUpdateRequest(@NotBlank String key, double price) {
