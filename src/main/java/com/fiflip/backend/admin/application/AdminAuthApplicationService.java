@@ -1,4 +1,4 @@
-package com.fiflip.backend.admin;
+package com.fiflip.backend.admin.application;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -9,28 +9,34 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.Optional;
 
 @Service
-public class AdminTokenService {
+public class AdminAuthApplicationService implements AdminAuthUseCases {
 
     private static final long TOKEN_TTL_SECONDS = 24 * 60 * 60;
     private static final String HMAC_ALGO = "HmacSHA256";
 
-    private final String secret;
+    private final String adminPassword;
+    private final String tokenSecret;
 
-    public AdminTokenService(@Value("${fiflip.admin.token-secret}") String secret) {
-        this.secret = secret;
+    public AdminAuthApplicationService(
+            @Value("${fiflip.admin.password}") String adminPassword,
+            @Value("${fiflip.admin.token-secret}") String tokenSecret) {
+        this.adminPassword = adminPassword;
+        this.tokenSecret = tokenSecret;
     }
 
-    public String issueToken() {
-        long expiresAt = Instant.now().getEpochSecond() + TOKEN_TTL_SECONDS;
-        String payload = String.valueOf(expiresAt);
-        String signature = sign(payload);
-        String raw = payload + "." + signature;
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+    @Override
+    public Optional<String> login(String password) {
+        if (adminPassword.isBlank() || password == null || !password.equals(adminPassword)) {
+            return Optional.empty();
+        }
+        return Optional.of(issueToken());
     }
 
-    public boolean isValid(String token) {
+    @Override
+    public boolean isTokenValid(String token) {
         try {
             String raw = new String(Base64.getUrlDecoder().decode(token), StandardCharsets.UTF_8);
             String[] parts = raw.split("\\.", 2);
@@ -50,10 +56,18 @@ public class AdminTokenService {
         }
     }
 
+    private String issueToken() {
+        long expiresAt = Instant.now().getEpochSecond() + TOKEN_TTL_SECONDS;
+        String payload = String.valueOf(expiresAt);
+        String signature = sign(payload);
+        String raw = payload + "." + signature;
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
+    }
+
     private String sign(String payload) {
         try {
             Mac mac = Mac.getInstance(HMAC_ALGO);
-            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), HMAC_ALGO));
+            mac.init(new SecretKeySpec(tokenSecret.getBytes(StandardCharsets.UTF_8), HMAC_ALGO));
             byte[] hash = mac.doFinal(payload.getBytes(StandardCharsets.UTF_8));
             return Base64.getUrlEncoder().withoutPadding().encodeToString(hash);
         } catch (Exception e) {
