@@ -1,5 +1,7 @@
-package com.fiflip.backend.project;
+package com.fiflip.backend.project.infrastructure;
 
+import com.fiflip.backend.project.domain.ProjectCategory;
+import com.fiflip.backend.project.domain.ProjectStatus;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -21,7 +23,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "projects")
-public class Project {
+public class ProjectJpaEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -64,12 +66,13 @@ public class Project {
     @Column(nullable = false)
     private Instant createdAt = Instant.now();
 
-    protected Project() {
+    protected ProjectJpaEntity() {
     }
 
-    public Project(String title, String description, ProjectCategory category, String coverImageUrl,
+    public ProjectJpaEntity(Long id, String title, String description, ProjectCategory category, String coverImageUrl,
             List<String> beforeImageUrls, List<String> afterImageUrls, ProjectStatus status, Double tea,
-            Boolean teaProjected, LocalDate projectDate) {
+            Boolean teaProjected, LocalDate projectDate, Instant createdAt) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.category = category;
@@ -80,6 +83,7 @@ public class Project {
         this.tea = tea;
         this.teaProjected = teaProjected;
         this.projectDate = projectDate;
+        this.createdAt = createdAt;
     }
 
     public Long getId() {
@@ -134,10 +138,6 @@ public class Project {
         this.afterImageUrls = afterImageUrls;
     }
 
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
     public ProjectStatus getStatus() {
         return status;
     }
@@ -168,5 +168,13 @@ public class Project {
 
     public void setProjectDate(LocalDate projectDate) {
         this.projectDate = projectDate;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }

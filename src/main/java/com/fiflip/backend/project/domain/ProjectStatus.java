@@ -1,4 +1,4 @@
-package com.fiflip.backend.project;
+package com.fiflip.backend.project.domain;
 
 public enum ProjectStatus {
     EN_OBRA,

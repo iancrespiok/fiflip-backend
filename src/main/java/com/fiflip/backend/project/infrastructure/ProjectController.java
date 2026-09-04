@@ -1,5 +1,7 @@
-package com.fiflip.backend.project;
+package com.fiflip.backend.project.infrastructure;
 
+import com.fiflip.backend.project.application.ProjectUseCases;
+import com.fiflip.backend.project.domain.Project;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,20 +14,20 @@ import java.util.List;
 @RequestMapping("/api/projects")
 public class ProjectController {
 
-    private final ProjectRepository repository;
+    private final ProjectUseCases projectUseCases;
 
-    public ProjectController(ProjectRepository repository) {
-        this.repository = repository;
+    public ProjectController(ProjectUseCases projectUseCases) {
+        this.projectUseCases = projectUseCases;
     }
 
     @GetMapping
     public List<Project> list() {
-        return repository.findAllByOrderByProjectDateDesc();
+        return projectUseCases.listProjects();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Project> get(@PathVariable Long id) {
-        return repository.findById(id)
+        return projectUseCases.getProject(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
