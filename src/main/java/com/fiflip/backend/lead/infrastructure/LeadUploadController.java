@@ -1,6 +1,7 @@
-package com.fiflip.backend.lead;
+package com.fiflip.backend.lead.infrastructure;
 
-import com.fiflip.backend.admin.R2StorageService;
+import com.fiflip.backend.lead.application.LeadUseCases;
+import com.fiflip.backend.storage.UploadedFile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,10 +17,10 @@ import java.util.Map;
 @RequestMapping("/api/leads")
 public class LeadUploadController {
 
-    private final R2StorageService storageService;
+    private final LeadUseCases leadUseCases;
 
-    public LeadUploadController(R2StorageService storageService) {
-        this.storageService = storageService;
+    public LeadUploadController(LeadUseCases leadUseCases) {
+        this.leadUseCases = leadUseCases;
     }
 
     @PostMapping("/uploads")
@@ -28,7 +29,8 @@ public class LeadUploadController {
         if (contentType == null || !contentType.startsWith("image/")) {
             return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(Map.of("error", "only images allowed"));
         }
-        String url = storageService.upload(file, "leads");
+        UploadedFile uploadedFile = new UploadedFile(file.getBytes(), file.getOriginalFilename(), contentType);
+        String url = leadUseCases.uploadLeadImage(uploadedFile);
         return ResponseEntity.ok(Map.of("url", url));
     }
 }

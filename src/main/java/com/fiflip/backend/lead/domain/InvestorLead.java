@@ -1,11 +1,9 @@
-package com.fiflip.backend.lead;
-
-import jakarta.validation.constraints.NotBlank;
+package com.fiflip.backend.lead.domain;
 
 public record InvestorLead(
-        @NotBlank String nombre,
-        @NotBlank String email,
-        @NotBlank String telefono,
+        String nombre,
+        String email,
+        String telefono,
         String monto,
         String mensaje,
         String eventId,
