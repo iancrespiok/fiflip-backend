@@ -1,5 +1,7 @@
-package com.fiflip.backend.admin;
+package com.fiflip.backend.project.infrastructure;
 
+import com.fiflip.backend.project.application.ProjectUseCases;
+import com.fiflip.backend.storage.UploadedFile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -12,17 +14,18 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-public class AdminUploadController {
+public class AdminProjectUploadController {
 
-    private final R2StorageService storageService;
+    private final ProjectUseCases projectUseCases;
 
-    public AdminUploadController(R2StorageService storageService) {
-        this.storageService = storageService;
+    public AdminProjectUploadController(ProjectUseCases projectUseCases) {
+        this.projectUseCases = projectUseCases;
     }
 
     @PostMapping("/uploads")
     public ResponseEntity<Map<String, String>> upload(@RequestParam("file") MultipartFile file) throws IOException {
-        String url = storageService.upload(file);
+        UploadedFile uploadedFile = new UploadedFile(file.getBytes(), file.getOriginalFilename(), file.getContentType());
+        String url = projectUseCases.uploadProjectImage(uploadedFile);
         return ResponseEntity.ok(Map.of("url", url));
     }
 }
