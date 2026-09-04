@@ -1,4 +1,4 @@
-package com.fiflip.backend.budget;
+package com.fiflip.backend.budget.domain;
 
 public enum PricingUnit {
     M2,

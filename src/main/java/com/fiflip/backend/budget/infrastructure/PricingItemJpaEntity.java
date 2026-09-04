@@ -1,5 +1,6 @@
-package com.fiflip.backend.budget;
+package com.fiflip.backend.budget.infrastructure;
 
+import com.fiflip.backend.budget.domain.PricingUnit;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,7 +10,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "pricing_items")
-public class PricingItem {
+public class PricingItemJpaEntity {
 
     @Id
     @Column(name = "item_key")
@@ -28,10 +29,10 @@ public class PricingItem {
     @Column(nullable = false)
     private double price;
 
-    protected PricingItem() {
+    protected PricingItemJpaEntity() {
     }
 
-    public PricingItem(String key, String label, String group, PricingUnit unit, double price) {
+    public PricingItemJpaEntity(String key, String label, String group, PricingUnit unit, double price) {
         this.key = key;
         this.label = label;
         this.group = group;

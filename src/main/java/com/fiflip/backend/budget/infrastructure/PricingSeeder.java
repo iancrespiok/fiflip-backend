@@ -1,5 +1,8 @@
-package com.fiflip.backend.budget;
+package com.fiflip.backend.budget.infrastructure;
 
+import com.fiflip.backend.budget.application.PricingCatalogRepository;
+import com.fiflip.backend.budget.domain.PricingItem;
+import com.fiflip.backend.budget.domain.PricingUnit;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -17,10 +20,10 @@ import java.util.List;
 @Component
 public class PricingSeeder implements CommandLineRunner {
 
-    private final PricingItemRepository repository;
+    private final PricingCatalogRepository repository;
     private final JdbcTemplate jdbcTemplate;
 
-    public PricingSeeder(PricingItemRepository repository, JdbcTemplate jdbcTemplate) {
+    public PricingSeeder(PricingCatalogRepository repository, JdbcTemplate jdbcTemplate) {
         this.repository = repository;
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -93,10 +96,10 @@ public class PricingSeeder implements CommandLineRunner {
         // created. Drop it — Bean Validation / the enum type itself already guard the values.
         jdbcTemplate.execute("ALTER TABLE pricing_items DROP CONSTRAINT IF EXISTS pricing_items_unit_check");
 
-        DEPRECATED_KEYS.forEach(key -> repository.findById(key).ifPresent(repository::delete));
+        DEPRECATED_KEYS.forEach(repository::deleteByKey);
 
         for (PricingItem item : CATALOG) {
-            if (repository.existsById(item.getKey())) {
+            if (repository.existsByKey(item.key())) {
                 continue;
             }
             repository.save(item);
