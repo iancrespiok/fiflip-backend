@@ -85,6 +85,12 @@ public class PricingSeeder implements CommandLineRunner {
             new PricingItem("lighting_material_fixed", "Luminaria (material)", "HABITACIÓN", PricingUnit.FIXED, 60000),
             new PricingItem("lighting_labor_fixed", "Luminaria (mano de obra)", "HABITACIÓN", PricingUnit.FIXED, 30000),
 
+            // TERRAZA O PATIO
+            new PricingItem("waterproofing_material_m2", "Impermeabilización de pisos con membrana (material) — por m²", "TERRAZA", PricingUnit.M2, 12000),
+            new PricingItem("waterproofing_labor_m2", "Impermeabilización de pisos con membrana (mano de obra) — por m²", "TERRAZA", PricingUnit.M2, 9000),
+            new PricingItem("water_tank_material_fixed", "Mover tanque de agua (material)", "TERRAZA", PricingUnit.FIXED, 90000),
+            new PricingItem("water_tank_labor_fixed", "Mover tanque de agua (mano de obra)", "TERRAZA", PricingUnit.FIXED, 150000),
+
             // CONFIG
             new PricingItem("margin_percent", "Margen de ganancia (%)", "CONFIG", PricingUnit.PERCENT, 20));
 

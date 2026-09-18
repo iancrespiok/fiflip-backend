@@ -45,10 +45,19 @@ public final class RoomItemCatalog {
             Map.entry("aire", new ItemPricing.FixedSplit("ac_material_fixed", "ac_labor_fixed")),
             Map.entry("abertura", new ItemPricing.FixedSplit("door_window_material_fixed", "door_window_labor_fixed")));
 
+    // Pasillo o distribuidor: mismas opciones (y mismos precios) que una habitación normal.
+    private static final Map<String, ItemPricing> PASILLO = HABITACION;
+
+    private static final Map<String, ItemPricing> TERRAZA = Map.ofEntries(
+            Map.entry("impermeabilizar", new ItemPricing.AreaSplit("waterproofing_material_m2", "waterproofing_labor_m2", Surface.FLOOR)),
+            Map.entry("tanque", new ItemPricing.FixedSplit("water_tank_material_fixed", "water_tank_labor_fixed")));
+
     private static final Map<RoomType, Map<String, ItemPricing>> BY_TYPE = Map.of(
             RoomType.BANO, BANO,
             RoomType.COCINA, COCINA,
-            RoomType.HABITACION, HABITACION);
+            RoomType.HABITACION, HABITACION,
+            RoomType.PASILLO, PASILLO,
+            RoomType.TERRAZA, TERRAZA);
 
     public static Map<String, ItemPricing> itemsFor(RoomType type) {
         return BY_TYPE.getOrDefault(type, Map.of());
