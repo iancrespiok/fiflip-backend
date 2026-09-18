@@ -24,13 +24,15 @@ public class BudgetCalculationService implements BudgetCalculationUseCases {
     }
 
     @Override
-    public double calculateTotal(List<RoomInput> rooms) {
+    public BudgetResult calculate(List<RoomInput> rooms) {
         Map<String, Double> prices = repository.findAllOrderedByGroupThenKey().stream()
                 .collect(Collectors.toMap(PricingItem::key, PricingItem::price));
 
-        double subtotal = rooms.stream().mapToDouble(room -> roomSubtotal(room, prices)).sum();
-        double marginPercent = price(prices, "margin_percent");
-        return subtotal * (1 + marginPercent / 100);
+        double marginMultiplier = 1 + price(prices, "margin_percent") / 100;
+        List<Double> roomTotals = rooms.stream()
+                .map(room -> (double) Math.round(roomSubtotal(room, prices) * marginMultiplier))
+                .toList();
+        return new BudgetResult(roomTotals.stream().mapToDouble(Double::doubleValue).sum(), roomTotals);
     }
 
     private double roomSubtotal(RoomInput room, Map<String, Double> prices) {

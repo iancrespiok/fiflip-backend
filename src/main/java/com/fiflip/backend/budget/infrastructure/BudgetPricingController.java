@@ -1,6 +1,7 @@
 package com.fiflip.backend.budget.infrastructure;
 
 import com.fiflip.backend.budget.application.BudgetCalculationUseCases;
+import com.fiflip.backend.budget.application.BudgetResult;
 import com.fiflip.backend.budget.application.RoomInput;
 import com.fiflip.backend.budget.domain.RoomType;
 import jakarta.validation.Valid;
@@ -40,12 +41,17 @@ public class BudgetPricingController {
     public record CalculateRequest(@NotEmpty @Valid List<RoomRequest> rooms) {
     }
 
-    public record CalculateResponse(double total) {
+    public record RoomResult(double total) {
+    }
+
+    // rooms[i] is the price of request.rooms[i]; total is their sum.
+    public record CalculateResponse(double total, List<RoomResult> rooms) {
     }
 
     @PostMapping("/calculate")
     public CalculateResponse calculate(@Valid @RequestBody CalculateRequest request) {
         List<RoomInput> rooms = request.rooms().stream().map(RoomRequest::toInput).toList();
-        return new CalculateResponse(budgetCalculationUseCases.calculateTotal(rooms));
+        BudgetResult result = budgetCalculationUseCases.calculate(rooms);
+        return new CalculateResponse(result.total(), result.roomTotals().stream().map(RoomResult::new).toList());
     }
 }
