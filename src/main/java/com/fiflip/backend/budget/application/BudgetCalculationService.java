@@ -56,15 +56,16 @@ public class BudgetCalculationService implements BudgetCalculationUseCases {
                 double area = surface == Surface.WALL ? wallAreaM2(room) : roomFloorM2(room);
                 yield (price(prices, materialKey) + price(prices, laborKey)) * area;
             }
-            case ItemPricing.Paint ignored -> paintCost(wallAreaM2(room), prices);
+            case ItemPricing.Paint(boolean includesCeiling) ->
+                    paintCost(wallAreaM2(room) + (includesCeiling ? roomFloorM2(room) : 0), prices);
         };
     }
 
-    private double paintCost(double wallM2, Map<String, Double> prices) {
-        double labor = price(prices, "paint_labor_m2") * wallM2;
-        double paint = unitsNeeded(wallM2, PAINT_BUCKET_COVERAGE_M2) * price(prices, "paint_bucket_price");
-        double putty = unitsNeeded(wallM2, PUTTY_BUCKET_COVERAGE_M2) * price(prices, "putty_bucket_price");
-        double primer = unitsNeeded(wallM2, PRIMER_COVERAGE_M2) * price(prices, "primer_price");
+    private double paintCost(double paintedM2, Map<String, Double> prices) {
+        double labor = price(prices, "paint_labor_m2") * paintedM2;
+        double paint = unitsNeeded(paintedM2, PAINT_BUCKET_COVERAGE_M2) * price(prices, "paint_bucket_price");
+        double putty = unitsNeeded(paintedM2, PUTTY_BUCKET_COVERAGE_M2) * price(prices, "putty_bucket_price");
+        double primer = unitsNeeded(paintedM2, PRIMER_COVERAGE_M2) * price(prices, "primer_price");
         return labor + paint + putty + primer;
     }
 
