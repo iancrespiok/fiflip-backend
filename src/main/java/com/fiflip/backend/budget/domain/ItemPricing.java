@@ -8,6 +8,7 @@ public sealed interface ItemPricing permits ItemPricing.FixedSplit, ItemPricing.
     record AreaSplit(String materialKey, String laborKey, Surface surface) implements ItemPricing {
     }
 
-    record Paint() implements ItemPricing {
+    /** Paint priced on the walls, plus the ceiling (same area as the floor) when {@code includesCeiling}. */
+    record Paint(boolean includesCeiling) implements ItemPricing {
     }
 }
