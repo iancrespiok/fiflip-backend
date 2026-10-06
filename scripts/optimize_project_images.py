@@ -17,12 +17,18 @@ Es seguro por diseño:
   * Los proyectos sin fecha (projectDate) no se pueden actualizar: el backend exige ese campo
     en el PUT. Se avisan y se saltean ANTES de subir nada; cargales la fecha en /admin.
 
+Con --covers solo toca las portadas y las deja en 960 px: las portadas se ven únicamente en las
+tarjetas de la home (~360 px) y, si son mucho más grandes que eso, el navegador las achica con
+"escalones" (diente de sierra en azulejos, parquet, marcos). A ~2x del tamaño en pantalla se ven suaves.
+Usa su propio mapa (mapping-covers.json), así --rollback --covers solo deshace las portadas.
+
 Uso (macOS: usa `sips`, que ya viene con el sistema):
     python3 scripts/optimize_project_images.py                       # ensayo con todo
     python3 scripts/optimize_project_images.py --only Murature       # ensayo con un proyecto
     ADMIN_PASSWORD=... python3 scripts/optimize_project_images.py --apply --only Murature
     ADMIN_PASSWORD=... python3 scripts/optimize_project_images.py --apply
     ADMIN_PASSWORD=... python3 scripts/optimize_project_images.py --rollback
+    ADMIN_PASSWORD=... python3 scripts/optimize_project_images.py --apply --covers
 
 La contraseña va solo por variable de entorno (nunca como argumento: queda en el historial).
 Conviene correrlo después de desplegar el cambio que agrega Cache-Control a las subidas.
@@ -39,6 +45,7 @@ import uuid
 
 DEFAULT_API = "https://fiflip-backend-production.up.railway.app"
 MAX_SIDE = 1800
+COVER_MAX_SIDE = 960  # las portadas solo se ven en tarjetas de ~360 px
 JPEG_QUALITY = 80
 MIN_SAVING = 0.15  # no vale la pena subir una foto que no baja al menos esto
 
@@ -77,12 +84,12 @@ def sips_props(path):
     return int(props["pixelWidth"]), int(props["pixelHeight"]), props.get("orientation", "<nil>")
 
 
-def shrink(src, dest):
+def shrink(src, dest, max_side=MAX_SIDE):
     """Escribe la versión achicada en `dest` y devuelve True si vale la pena usarla."""
     width, height, orientation = sips_props(src)
     cmd = ["sips"]
-    if max(width, height) > MAX_SIDE:  # `sips -Z` también AGRANDA las imágenes chicas
-        cmd += ["-Z", str(MAX_SIDE)]
+    if max(width, height) > max_side:  # `sips -Z` también AGRANDA las imágenes chicas
+        cmd += ["-Z", str(max_side)]
     cmd += ["-s", "format", "jpeg", "-s", "formatOptions", str(JPEG_QUALITY), src, "--out", dest]
     subprocess.run(cmd, capture_output=True, check=True)
     if sips_props(dest)[2] != orientation:  # se rotaría distinto en pantalla: mejor no tocarla
@@ -109,21 +116,25 @@ def upload(api, token, path):
         raise SystemExit(f"upload de {path} -> HTTP {e.code}: {e.read().decode(errors='replace')[:300]}")
 
 
-def project_photo_urls(project):
+def project_photo_urls(project, covers_only=False):
+    if covers_only:
+        return [project["coverImageUrl"]]
     urls = [project["coverImageUrl"]] + project["beforeImageUrls"] + project["afterImageUrls"]
     return list(dict.fromkeys(u for u in urls if u))  # sin repetidos, en orden
 
 
-def project_body(project, url_map):
+def project_body(project, url_map, covers_only=False):
     """El cuerpo del PUT: el mismo proyecto, con cada URL reemplazada si tiene versión nueva."""
     swap = lambda u: url_map.get(u, u)
+    keep = lambda u: u  # con --covers las fotos del antes/después no se tocan
+    swap_photos = keep if covers_only else swap
     return {
         "title": project["title"],
         "description": project["description"],
         "category": project["category"],
         "coverImageUrl": swap(project["coverImageUrl"]),
-        "beforeImageUrls": [swap(u) for u in project["beforeImageUrls"]],
-        "afterImageUrls": [swap(u) for u in project["afterImageUrls"]],
+        "beforeImageUrls": [swap_photos(u) for u in project["beforeImageUrls"]],
+        "afterImageUrls": [swap_photos(u) for u in project["afterImageUrls"]],
         "status": project.get("status"),
         "tea": project.get("tea"),
         "teaProjected": project.get("teaProjected"),
@@ -147,13 +158,15 @@ def main():
     ap.add_argument("--api", default=os.environ.get("API_URL", DEFAULT_API))
     ap.add_argument("--apply", action="store_true", help="sube las fotos y actualiza los proyectos (sin esto es un ensayo)")
     ap.add_argument("--rollback", action="store_true", help="vuelve a poner las URLs viejas en los proyectos")
+    ap.add_argument("--covers", action="store_true", help="solo las portadas, a 960 px (arregla el diente de sierra en las tarjetas)")
     ap.add_argument("--only", help="solo los proyectos cuyo título contenga este texto")
     ap.add_argument("--workdir", default=os.path.join(tempfile.gettempdir(), "fiflip-image-optimize"))
     args = ap.parse_args()
     api = args.api.rstrip("/")
 
     os.makedirs(args.workdir, exist_ok=True)
-    mapping_path = os.path.join(args.workdir, "mapping.json")
+    mapping_path = os.path.join(args.workdir, "mapping-covers.json" if args.covers else "mapping.json")
+    max_side = COVER_MAX_SIDE if args.covers else MAX_SIDE
     mapping = json.load(open(mapping_path)) if os.path.exists(mapping_path) else {}  # viejo -> nuevo
 
     projects = request_json("GET", f"{api}/api/projects")
@@ -166,8 +179,8 @@ def main():
         token = login(api)
         reverse = {new: old for old, new in mapping.items()}
         for p in projects:
-            body = project_body(p, reverse)
-            if not any(u in reverse for u in project_photo_urls(p)):
+            body = project_body(p, reverse, args.covers)
+            if not any(u in reverse for u in project_photo_urls(p, args.covers)):
                 continue
             request_json("PUT", f"{api}/api/admin/projects/{p['id']}", body, token)
             print(f"revertido: {p['title'].strip()}")
@@ -183,7 +196,7 @@ def main():
             skipped.append(title)
             continue  # el PUT lo rechazaría: ni siquiera subimos sus fotos
         before = after = 0
-        for url in project_photo_urls(p):
+        for url in project_photo_urls(p, args.covers):
             src = os.path.join(args.workdir, "orig-" + uuid.uuid5(uuid.NAMESPACE_URL, url).hex)
             out = os.path.join(args.workdir, "opt-" + uuid.uuid5(uuid.NAMESPACE_URL, url).hex + ".jpg")
             if not os.path.exists(src):
@@ -193,7 +206,7 @@ def main():
             if url in mapping:  # ya procesada en una corrida anterior
                 after += os.path.getsize(out) if os.path.exists(out) else size
                 continue
-            if shrink(src, out):
+            if shrink(src, out, max_side):
                 after += os.path.getsize(out)
                 if args.apply:
                     mapping[url] = upload(api, token, out)
@@ -202,9 +215,9 @@ def main():
                 after += size
         total_before += before
         total_after += after
-        print(f"{title[:22]:22} {len(project_photo_urls(p)):>5} {mb(before)} {mb(after)}")
-        if args.apply and any(u in mapping for u in project_photo_urls(p)):
-            request_json("PUT", f"{api}/api/admin/projects/{p['id']}", project_body(p, mapping), token)
+        print(f"{title[:22]:22} {len(project_photo_urls(p, args.covers)):>5} {mb(before)} {mb(after)}")
+        if args.apply and any(u in mapping for u in project_photo_urls(p, args.covers)):
+            request_json("PUT", f"{api}/api/admin/projects/{p['id']}", project_body(p, mapping, args.covers), token)
 
     print(f"{'TOTAL':22} {'':>5} {mb(total_before)} {mb(total_after)}   (-{100 - 100 * total_after / max(total_before, 1):.0f} %)")
     if not args.apply:
