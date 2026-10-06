@@ -52,6 +52,9 @@ public class R2ObjectStorage implements ObjectStorage {
                         .bucket(bucket)
                         .key(key)
                         .contentType(file.contentType())
+                        // The key embeds a random UUID and is never overwritten, so browsers can
+                        // cache each photo for good instead of re-downloading it on every visit.
+                        .cacheControl("public, max-age=31536000, immutable")
                         .build(),
                 RequestBody.fromBytes(file.content()));
 
