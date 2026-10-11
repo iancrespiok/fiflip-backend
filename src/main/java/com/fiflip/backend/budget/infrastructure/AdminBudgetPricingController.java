@@ -1,13 +1,21 @@
 package com.fiflip.backend.budget.infrastructure;
 
+import com.fiflip.backend.budget.application.BudgetCalculationUseCases;
+import com.fiflip.backend.budget.application.BudgetResult;
 import com.fiflip.backend.budget.application.PriceUpdateCommand;
 import com.fiflip.backend.budget.application.PricingUseCases;
+import com.fiflip.backend.budget.application.RoomInput;
 import com.fiflip.backend.budget.domain.PricingItem;
+import com.fiflip.backend.budget.infrastructure.BudgetPricingController.CalculateRequest;
+import com.fiflip.backend.budget.infrastructure.BudgetPricingController.CalculateResponse;
+import com.fiflip.backend.budget.infrastructure.BudgetPricingController.RoomRequest;
+import com.fiflip.backend.budget.infrastructure.BudgetPricingController.RoomResult;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -20,9 +28,11 @@ import java.util.List;
 public class AdminBudgetPricingController {
 
     private final PricingUseCases pricingUseCases;
+    private final BudgetCalculationUseCases budgetCalculationUseCases;
 
-    public AdminBudgetPricingController(PricingUseCases pricingUseCases) {
+    public AdminBudgetPricingController(PricingUseCases pricingUseCases, BudgetCalculationUseCases budgetCalculationUseCases) {
         this.pricingUseCases = pricingUseCases;
+        this.budgetCalculationUseCases = budgetCalculationUseCases;
     }
 
     @GetMapping("/pricing")
@@ -43,5 +53,13 @@ public class AdminBudgetPricingController {
     public ResponseEntity<List<PricingItem>> updatePricing(@Valid @RequestBody PricingUpdateRequest request) {
         List<PriceUpdateCommand> commands = request.items().stream().map(PriceUpdateRequest::toCommand).toList();
         return ResponseEntity.ok(pricingUseCases.updatePrices(commands));
+    }
+
+    // Same request/response as the public /api/budget/calculate, but without the margin.
+    @PostMapping("/calculate-cost")
+    public CalculateResponse calculateCost(@Valid @RequestBody CalculateRequest request) {
+        List<RoomInput> rooms = request.rooms().stream().map(RoomRequest::toInput).toList();
+        BudgetResult result = budgetCalculationUseCases.calculateCost(rooms);
+        return new CalculateResponse(result.total(), result.roomTotals().stream().map(RoomResult::new).toList());
     }
 }

@@ -25,10 +25,19 @@ public class BudgetCalculationService implements BudgetCalculationUseCases {
 
     @Override
     public BudgetResult calculate(List<RoomInput> rooms) {
+        return calculate(rooms, true);
+    }
+
+    @Override
+    public BudgetResult calculateCost(List<RoomInput> rooms) {
+        return calculate(rooms, false);
+    }
+
+    private BudgetResult calculate(List<RoomInput> rooms, boolean applyMargin) {
         Map<String, Double> prices = repository.findAllOrderedByGroupThenKey().stream()
                 .collect(Collectors.toMap(PricingItem::key, PricingItem::price));
 
-        double marginMultiplier = 1 + price(prices, "margin_percent") / 100;
+        double marginMultiplier = applyMargin ? 1 + price(prices, "margin_percent") / 100 : 1;
         List<Double> roomTotals = rooms.stream()
                 .map(room -> (double) Math.round(roomSubtotal(room, prices) * marginMultiplier))
                 .toList();

@@ -131,6 +131,18 @@ class BudgetCalculationServiceTest {
     }
 
     @Test
+    void costIsTheSameCalculationWithoutTheMargin() {
+        RoomInput terraza = new RoomInput(RoomType.TERRAZA, 4, 3, 2.6, Set.of("impermeabilizar", "tanque"));
+        RoomInput habitacion = new RoomInput(RoomType.HABITACION, 3, 3, 2.6, Set.of("luminaria"));
+
+        BudgetResult result = service.calculateCost(List.of(terraza, habitacion));
+
+        // terraza: 12 m² * (1000 + 500) + (10000 + 5000); habitación: 600 + 300
+        assertEquals(List.of(33000.0, 900.0), result.roomTotals());
+        assertEquals(33900.0, result.total());
+    }
+
+    @Test
     void itemKeyFromAnotherRoomTypeIsIgnored() {
         BudgetResult result = service.calculate(List.of(
                 new RoomInput(RoomType.TERRAZA, 4, 3, 1.5, Set.of("aire"))));
