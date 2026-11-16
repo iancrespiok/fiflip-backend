@@ -23,7 +23,8 @@ public final class RoomItemCatalog {
             Map.entry("ducha", new ItemPricing.FixedSplit("shower_glass_material_fixed", "shower_glass_labor_fixed")),
             Map.entry("enchufes", new ItemPricing.FixedSplit("outlets_material_fixed", "outlets_labor_fixed")),
             Map.entry("vanitory", new ItemPricing.FixedSplit("vanity_mirror_material_fixed", "vanity_mirror_labor_fixed")),
-            Map.entry("griferias", new ItemPricing.FixedSplit("faucet_material_fixed", "faucet_labor_fixed")),
+            // Las griferías del baño (vanitory, bidet y ducha) tienen su propio precio: no son la de cocina.
+            Map.entry("griferias", new ItemPricing.FixedSplit("bath_faucet_material_fixed", "bath_faucet_labor_fixed")),
             Map.entry("abertura", new ItemPricing.FixedSplit("door_window_material_fixed", "door_window_labor_fixed")),
             Map.entry("puerta_corrediza", new ItemPricing.FixedSplit("sliding_door_material_fixed", "sliding_door_labor_fixed")));
 
